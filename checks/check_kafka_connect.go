@@ -5,7 +5,7 @@ import(
   "os"
   "strconv"
   "github.com/alexflint/go-arg"
-  "github.com/uscis/kafka-connect-monitoring-tools/common"
+  "github.com/jesseadams/kafka-connect-monitoring-tools/common"
 )
 
 var args struct {

@@ -6,7 +6,7 @@ import(
   "strconv"
   "time"
   "github.com/alexflint/go-arg"
-  "github.com/uscis/kafka-connect-monitoring-tools/common"
+  "github.com/jesseadams/kafka-connect-monitoring-tools/common"
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/aws/session"
   "github.com/aws/aws-sdk-go/service/cloudwatch"
@@ -16,12 +16,23 @@ var args struct {
   Host string `arg:"required"`
   Connector string `arg:"required"`
   DontValidateSsl bool `arg:"--dont-validate-ssl"`
+  DimensionName string
+  DimensionValue string
+  Namespace string
   Port int
   Insecure bool
   ProtocolString string
 }
 
 func main() {
+  args.Namespace = "KafkaConnect"
+  args.DimensionName = "Host"
+  args.DimensionValue, err = os.Hostname()
+
+  if err != nil {
+    args.DimensionValue = "Unknown"
+  }
+
   arg.MustParse(&args)
 
   if args.Port == 0 {
@@ -51,39 +62,26 @@ func main() {
   sess := session.Must(session.NewSession())
   svc := cloudwatch.New(sess)
   params := &cloudwatch.PutMetricDataInput{
-    MetricData: []*cloudwatch.MetricDatum{ // Required
-        { // Required
-            MetricName: aws.String("Test"), // Required
+    MetricData: []*cloudwatch.MetricDatum{
+        {
+            MetricName: aws.String("HealthyTaskCount"),
             Dimensions: []*cloudwatch.Dimension{
-                { // Required
-                    Name:  aws.String("DimensionName"),  // Required
-                    Value: aws.String("DimensionValue"), // Required
+                {
+                    Name:  aws.String(args.DimensionName),
+                    Value: aws.String(args.DimensionValue),
                 },
-                // More values...
-            },
-            StatisticValues: &cloudwatch.StatisticSet{
-                Maximum:     aws.Float64(1.0), // Required
-                Minimum:     aws.Float64(1.0), // Required
-                SampleCount: aws.Float64(1.0), // Required
-                Sum:         aws.Float64(1.0), // Required
             },
             Timestamp: aws.Time(time.Now()),
-            Unit:      aws.String("StandardUnit"),
-            Value:     aws.Float64(1.0),
+            Unit:      aws.String("Count"),
+            Value:     aws.Float64(float64(tasksCount)),
         },
-        // More values...
     },
-    Namespace: aws.String("Jesse"), // Required
+    Namespace: aws.String(args.Namespace),
   }
   resp, err := svc.PutMetricData(params)
 
   if err != nil {
-      // Print the error, cast err to awserr.Error to get the Code and
-      // Message from an error.
       fmt.Println(err.Error())
       return
   }
-
-  // Pretty-print the response data.
-  fmt.Println(resp)
 }

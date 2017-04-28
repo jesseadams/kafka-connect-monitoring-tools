@@ -1,3 +1,12 @@
+package kafka_connect
+
+import(
+  "net/http"
+  "encoding/json"
+  "crypto/tls"
+  "time"
+)
+
 type KafkaConnector struct {
   State string
   WorkerId string
@@ -15,17 +24,9 @@ type KafkaConnectorStatus struct {
   Tasks []KafkaConnectorTask
 }
 
-func GenerateUrl() string {
-  var endpoint = "/connectors/" + args.Connector + "/status"
-  var hostString = args.ProtocolString + "://" + args.Host + ":" + strconv.Itoa(args.Port)
-  url := hostString + endpoint
-
-  return url
-}
-
-func CheckKafkaConnect(url string, target interface{}) error {
+func CheckStatus(url string, target interface{}, validateSsl bool) error {
   transport := &http.Transport{
-    TLSClientConfig: &tls.Config{InsecureSkipVerify: args.DontValidateSsl},
+    TLSClientConfig: &tls.Config{InsecureSkipVerify: validateSsl},
   }
   var client = &http.Client{Transport: transport, Timeout: 10 * time.Second}
   response, err := client.Get(url)

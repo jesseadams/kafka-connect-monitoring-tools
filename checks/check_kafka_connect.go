@@ -4,12 +4,8 @@ import(
   "fmt"
   "os"
   "strconv"
-  "net/http"
-  "encoding/json"
-  "crypto/tls"
-  "time"
   "github.com/alexflint/go-arg"
-  "github.com/uscis/kafka-connect-monitoring-tools/common/kafka_connect"
+  "github.com/uscis/kafka-connect-monitoring-tools/common"
 )
 
 var args struct {
@@ -36,9 +32,11 @@ func main() {
     }
   }
 
-  url := GenerateUrl()
-  status := new(KafkaConnectorStatus)
-  err := CheckKafkaConnect(url, status)
+  endpoint := "/connectors/" + args.Connector + "/status"
+  hostString := args.ProtocolString + "://" + args.Host + ":" + strconv.Itoa(args.Port)
+  url := hostString + endpoint
+  status := new(kafka_connect.KafkaConnectorStatus)
+  err := kafka_connect.CheckStatus(url, status, args.DontValidateSsl)
 
   if err != nil {
     fmt.Println(err)

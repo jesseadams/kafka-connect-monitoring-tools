@@ -27,11 +27,7 @@ var args struct {
 func main() {
   args.Namespace = "KafkaConnect"
   args.DimensionName = "Host"
-  args.DimensionValue, err = os.Hostname()
-
-  if err != nil {
-    args.DimensionValue = "Unknown"
-  }
+  args.DimensionValue, _ = os.Hostname()
 
   arg.MustParse(&args)
 
@@ -78,7 +74,7 @@ func main() {
     },
     Namespace: aws.String(args.Namespace),
   }
-  resp, err := svc.PutMetricData(params)
+  _, err = svc.PutMetricData(params)
 
   if err != nil {
       fmt.Println(err.Error())

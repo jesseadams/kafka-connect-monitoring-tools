@@ -39,3 +39,22 @@ func CheckStatus(baseUrl string, connector string, target interface{}, validateS
 
   return json.NewDecoder(response.Body).Decode(target)
 }
+
+func ListConnectors(baseUrl string, validateSsl bool) ([]string, error) {
+  endpoint := "/connectors"
+  transport := &http.Transport{
+    TLSClientConfig: &tls.Config{InsecureSkipVerify: validateSsl},
+  }
+  var client = &http.Client{Transport: transport, Timeout: 10 * time.Second}
+  response, err := client.Get(baseUrl + endpoint)
+
+  if err != nil {
+    return nil, err
+  }
+  defer response.Body.Close()
+
+  var connectors []string
+  errors := json.NewDecoder(response.Body).Decode(&connectors)
+
+  return connectors, errors
+}

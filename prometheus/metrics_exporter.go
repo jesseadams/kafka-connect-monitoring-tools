@@ -1,9 +1,9 @@
 package main
 
 import (
-	"io"
-	"net/http"
-	"log"
+  "io"
+  "net/http"
+  "log"
   "os"
   "fmt"
   "github.com/jesseadams/kafka-connect-monitoring-tools/common"
@@ -42,6 +42,6 @@ func PublishPrometheusMetrics(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/metrics", PublishPrometheusMetrics)
-	log.Fatal(http.ListenAndServe(":9045", nil))
+  http.HandleFunc("/metrics", PublishPrometheusMetrics)
+  log.Fatal(http.ListenAndServe(":9045", nil))
 }

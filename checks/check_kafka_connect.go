@@ -32,11 +32,9 @@ func main() {
     }
   }
 
-  endpoint := "/connectors/" + args.Connector + "/status"
   hostString := args.ProtocolString + "://" + args.Host + ":" + strconv.Itoa(args.Port)
-  url := hostString + endpoint
   status := new(kafka_connect.KafkaConnectorStatus)
-  err := kafka_connect.CheckStatus(url, status, args.DontValidateSsl)
+  err := kafka_connect.CheckStatus(hostString, args.Connector, status, args.DontValidateSsl)
 
   if err != nil {
     fmt.Println(err)

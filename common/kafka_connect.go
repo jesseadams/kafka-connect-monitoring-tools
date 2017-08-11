@@ -24,12 +24,13 @@ type KafkaConnectorStatus struct {
   Tasks []KafkaConnectorTask
 }
 
-func CheckStatus(url string, target interface{}, validateSsl bool) error {
+func CheckStatus(baseUrl string, connector string, target interface{}, validateSsl bool) error {
+  endpoint := "/connectors/" + connector + "/status"
   transport := &http.Transport{
     TLSClientConfig: &tls.Config{InsecureSkipVerify: validateSsl},
   }
   var client = &http.Client{Transport: transport, Timeout: 10 * time.Second}
-  response, err := client.Get(url)
+  response, err := client.Get(baseUrl + endpoint)
 
   if err != nil {
     return err

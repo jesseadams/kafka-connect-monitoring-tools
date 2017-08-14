@@ -9,8 +9,7 @@ import (
   "github.com/jesseadams/kafka-connect-monitoring-tools/common"
 )
 
-func PublishPrometheusMetrics(w http.ResponseWriter, req *http.Request) {
-  hostString := os.Getenv("KAFKA_CONNECT_URL")
+func PublishKafkaConnectMetrics(hostString string, w http.ResponseWriter) {
   connectors, err := kafka_connect.ListConnectors(hostString, true)
   if err != nil {
     fmt.Println(err)
@@ -39,6 +38,39 @@ func PublishPrometheusMetrics(w http.ResponseWriter, req *http.Request) {
       line := fmt.Sprintf("kafka_connect_runningtaskscount{connector=\"%s\"} %.1f\n", connector, runningTasksCount)
       io.WriteString(w, line)
   }
+}
+
+func PublishSchemaRegistryMetrics(hostString string, w http.ResponseWriter) {
+  subjects, err := kafka_connect.ListSubjects(hostString, true)
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  subjectCount := len(subjects)
+  io.WriteString(w, "# TYPE schema_registry_subjectcount gauge\n")
+  line := fmt.Sprintf("schema_registry_subjectcount %.1f\n", float64(subjectCount))
+  io.WriteString(w, line)
+
+  io.WriteString(w, "# TYPE schema_registry_versioncount gauge\n")
+  for _, subject := range subjects {
+      versions, err := kafka_connect.ListVersions(hostString, subject, true)
+
+      if err != nil {
+        fmt.Println(err)
+      }
+
+      versionCount := len(versions)
+      line := fmt.Sprintf("schema_registry_versioncount{subject=\"%s\"} %.1f\n", subject, float64(versionCount))
+      io.WriteString(w, line)
+  }
+}
+
+func PublishPrometheusMetrics(w http.ResponseWriter, req *http.Request) {
+  kafkaConnectHostString := os.Getenv("KAFKA_CONNECT_URL")
+  schemaRegistryHostString := os.Getenv("SCHEMA_REGISTRY_URL")
+
+  PublishKafkaConnectMetrics(kafkaConnectHostString, w)
+  PublishSchemaRegistryMetrics(schemaRegistryHostString, w)
 }
 
 func main() {

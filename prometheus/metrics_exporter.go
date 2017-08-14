@@ -110,5 +110,5 @@ func RetrievePrometheusMetrics() {
 func main() {
   go RetrievePrometheusMetrics()
   http.HandleFunc("/metrics", PublishPrometheusMetrics)
-  log.Fatal(http.ListenAndServe(":9045", nil))
+  log.Fatal(http.ListenAndServe(":7071", nil))
 }

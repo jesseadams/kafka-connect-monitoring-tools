@@ -20,4 +20,12 @@ for os in $os_list; do
 done
 cd ..
 
+cd prometheus
+go get
+for os in $os_list; do
+  echo "Building metrics_exporter for $os"
+  GOOS=$os go build -o ../build/metrics_exporter.${os}.amd64
+done
+cd ..
+
 echo "Done"

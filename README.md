@@ -47,3 +47,18 @@ ProtocolString string
 Example:
 
 `./healthy_task_count --host foo.example.com --connector my-connector-name --dont-validate-ssl`
+
+##### prometheus/metrics_exporter
+
+This is a lightweight HTTP service that polls the kafka connect and schema registry APIs and publishes an endpoint that provides Prometheus-friendly metrics. So far the following metrics are supported.
+
+* kafka_connect_connectorcount
+* kafka_connect_runningtaskscount (per connector)
+* schema_registry_subjectcount
+* schema_registry_versioncount
+
+Configuration is achieved through setting the following environment variables.
+
+* KAFKA_CONNECT_URL - Required, example: https://example.com
+* SCHEMA_REGISTRY_URL - Required, example: http://example.com
+* METRICS_REFRESH_RATE - Optional, in seconds, defaults to 10

@@ -12,6 +12,7 @@ var args struct {
   Host string `arg:"required"`
   Connector string `arg:"required"`
   DontValidateSsl bool `arg:"--dont-validate-ssl"`
+  Path string
   TaskCount int
   Port int
   Insecure bool
@@ -32,7 +33,7 @@ func main() {
     }
   }
 
-  hostString := args.ProtocolString + "://" + args.Host + ":" + strconv.Itoa(args.Port)
+  hostString := args.ProtocolString + "://" + args.Host + ":" + strconv.Itoa(args.Port) + args.Path
   status := new(kafka_connect.KafkaConnectorStatus)
   err := kafka_connect.CheckStatus(hostString, args.Connector, status, args.DontValidateSsl)
 

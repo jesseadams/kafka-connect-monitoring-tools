@@ -7,7 +7,7 @@ import(
   "time"
 )
 
-func ListVersions(baseUrl string, subject string, validateSsl bool) ([]string, error) {
+func ListVersions(baseUrl string, subject string, validateSsl bool) ([]int, error) {
   endpoint := "/subjects/" + subject + "/versions"
   transport := &http.Transport{
     TLSClientConfig: &tls.Config{InsecureSkipVerify: validateSsl},
@@ -20,7 +20,7 @@ func ListVersions(baseUrl string, subject string, validateSsl bool) ([]string, e
   }
   defer response.Body.Close()
 
-  var versions []string
+  var versions []int
   errors := json.NewDecoder(response.Body).Decode(&versions)
 
   return versions, errors

@@ -8,7 +8,7 @@ import (
   "fmt"
   "time"
   "strconv"
-  "github.com/jesseadams/kafka-connect-monitoring-tools/common"
+  "kafka-connect-monitoring-tools/common"
 )
 
 var ResponseString = "Initializing..."

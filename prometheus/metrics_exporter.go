@@ -8,15 +8,15 @@ import (
   "fmt"
   "time"
   "strconv"
-  "github.com/jesseadams/kafka-connect-monitoring-tools/common"
+  "kafka-connect-monitoring-tools/common"
 )
 
 var ResponseString = "Initializing..."
 
-func RetrieveKafkaConnectMetrics(hostString string) string {
+func RetrieveKafkaConnectMetrics(hostString string, validateSsl bool) string {
   var output string
 
-  connectors, err := kafka_connect.ListConnectors(hostString, true)
+  connectors, err := kafka_connect.ListConnectors(hostString, validateSsl)
   if err != nil {
     fmt.Println(err)
   }
@@ -29,7 +29,7 @@ func RetrieveKafkaConnectMetrics(hostString string) string {
   output += "# TYPE kafka_connect_runningtaskscount gauge\n"
   for _, connector := range connectors {
       status := new(kafka_connect.KafkaConnectorStatus)
-      err = kafka_connect.CheckStatus(hostString, connector, status, true)
+      err = kafka_connect.CheckStatus(hostString, connector, status, validateSsl)
 
       if err != nil {
         fmt.Println(err)
@@ -48,10 +48,10 @@ func RetrieveKafkaConnectMetrics(hostString string) string {
   return output
 }
 
-func RetrieveSchemaRegistryMetrics(hostString string) string {
+func RetrieveSchemaRegistryMetrics(hostString string, validateSsl bool) string {
   var output string
 
-  subjects, err := kafka_connect.ListSubjects(hostString, true)
+  subjects, err := kafka_connect.ListSubjects(hostString, validateSsl)
   if err != nil {
     fmt.Println(err)
   }
@@ -63,7 +63,7 @@ func RetrieveSchemaRegistryMetrics(hostString string) string {
 
   output +=  "# TYPE schema_registry_versioncount gauge\n"
   for _, subject := range subjects {
-      versions, err := kafka_connect.ListVersions(hostString, subject, true)
+      versions, err := kafka_connect.ListVersions(hostString, subject, validateSsl)
 
       if err != nil {
         fmt.Println(err)
@@ -83,6 +83,7 @@ func PublishPrometheusMetrics(writer http.ResponseWriter, req *http.Request) {
 
 func RetrievePrometheusMetrics() {
   kafkaConnectHostString := os.Getenv("KAFKA_CONNECT_URL")
+  validateSsl, err := strconv.ParseBool(os.Getenv("VALIDATE_SSL"))
   schemaRegistryHostString := os.Getenv("SCHEMA_REGISTRY_URL")
   metricsRefreshRate, err := strconv.ParseInt(os.Getenv("METRICS_REFRESH_RATE"), 10, 32)
 
@@ -91,20 +92,20 @@ func RetrievePrometheusMetrics() {
     fmt.Println(err)
   }
 
-  if metricsRefreshRate < 10 {
-    metricsRefreshRate = 60
-  }
-
   fmt.Printf("Metrics Refresh Rate: %d seconds\n", metricsRefreshRate)
   for true {
-    fmt.Println("Refreshing metrics...")
-    kafkaConnectOutput := RetrieveKafkaConnectMetrics(kafkaConnectHostString)
-    schemaRegistryOutput := RetrieveSchemaRegistryMetrics(schemaRegistryHostString)
+    fmt.Println(Timestamp() + " Refreshing metrics...")
+    kafkaConnectOutput := RetrieveKafkaConnectMetrics(kafkaConnectHostString, validateSsl)
+    schemaRegistryOutput := RetrieveSchemaRegistryMetrics(schemaRegistryHostString, validateSsl)
     ResponseString = kafkaConnectOutput + schemaRegistryOutput
-    fmt.Println("Metrics refresh complete!")
+    fmt.Println(Timestamp() + " Metrics refresh complete!")
 
     time.Sleep(time.Duration(metricsRefreshRate) * time.Second)
   }
+}
+
+func Timestamp() string {
+  return time.Now().Format(time.RFC3339)
 }
 
 func main() {

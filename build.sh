@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 export GOARCH=amd64
 os_list="linux darwin windows"

@@ -92,20 +92,20 @@ func RetrievePrometheusMetrics() {
     fmt.Println(err)
   }
 
-  if metricsRefreshRate < 10 {
-    metricsRefreshRate = 60
-  }
-
   fmt.Printf("Metrics Refresh Rate: %d seconds\n", metricsRefreshRate)
   for true {
-    fmt.Println("Refreshing metrics...")
+    fmt.Println(Timestamp() + " Refreshing metrics...")
     kafkaConnectOutput := RetrieveKafkaConnectMetrics(kafkaConnectHostString, validateSsl)
     schemaRegistryOutput := RetrieveSchemaRegistryMetrics(schemaRegistryHostString, validateSsl)
     ResponseString = kafkaConnectOutput + schemaRegistryOutput
-    fmt.Println("Metrics refresh complete!")
+    fmt.Println(Timestamp() + " Metrics refresh complete!")
 
     time.Sleep(time.Duration(metricsRefreshRate) * time.Second)
   }
+}
+
+func Timestamp() string {
+  return time.Now().Format(time.RFC3339)
 }
 
 func main() {
